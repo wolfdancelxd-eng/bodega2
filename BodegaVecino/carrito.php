@@ -6,23 +6,45 @@ if (session_status() === PHP_SESSION_NONE) {
 // Asegúrate de que el bloque que procesa el POST maneje la inserción inicial:
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
+    // 1. LÓGICA PARA VACIAR EL CARRITO COMPLETAMENTE
+    if (isset($_POST['accion_vaciar'])) {
+        $_SESSION['carrito'] = []; // Limpiamos el array
+    }
+
+    // 2. LÓGICA PARA ELIMINAR UN PRODUCTO INDIVIDUAL (El botoncito del tacho de basura)
+    if (isset($_POST['accion_eliminar'])) {
+        $id_eliminar = $_POST['producto_id'];
+        if (isset($_SESSION['carrito'][$id_eliminar])) {
+            unset($_SESSION['carrito'][$id_eliminar]);
+        }
+    }
+    
+    // 3. LÓGICA PARA SUMAR / RESTAR CANTIDADES
     if (isset($_POST['accion_cantidad'])) {
         $id_modificar = $_POST['producto_id'];
         $tipo = $_POST['accion_cantidad'];
         
         if ($tipo === 'sumar') {
-            // Si ya existe en el carrito, sumamos cantidad
             if (isset($_SESSION['carrito'][$id_modificar])) {
                 $_SESSION['carrito'][$id_modificar]['cantidad'] += 1;
-            } 
-            // SI NO EXISTE (Viene de productos.php por primera vez), lo creamos:
-            else {
+            } else {
+                // SI NO EXISTE (Viene de productos.php por primera vez), lo creamos:
                 $_SESSION['carrito'][$id_modificar] = [
                     'nombre'   => $_POST['nombre'],
                     'precio'   => (float)$_POST['precio'],
                     'imagen'   => $_POST['imagen'],
                     'cantidad' => 1
                 ];
+            }
+        }
+        
+        if ($tipo === 'restar') {
+            if (isset($_SESSION['carrito'][$id_modificar])) {
+                $_SESSION['carrito'][$id_modificar]['cantidad'] -= 1;
+                // Si la cantidad llega a 0, eliminamos el producto por completo
+                if ($_SESSION['carrito'][$id_modificar]['cantidad'] <= 0) {
+                    unset($_SESSION['carrito'][$id_modificar]);
+                }
             }
         }
     }
