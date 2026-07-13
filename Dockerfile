@@ -1,7 +1,4 @@
-From php: 8.2-apache
-
-Run a2enmod rewrite
-
-Copy . /var/www/html/
-
-Expose 80
+FROM php:8.2-apache
+RUN a2enmod rewrite
+COPY . /var/www/html/
+EXPOSE 80
