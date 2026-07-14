@@ -158,34 +158,37 @@ document.getElementById('form-consulta').addEventListener('submit', function(eve
     }
 
     // SI ESTÁ LOGUEADO: Mandamos los datos por AJAX
+    // MODIFICA ESTA PARTE DENTRO DE TU SCRIPT ACTUAL:
     const form = this;
     const btn = form.querySelector('.btn-send');
     const originalText = btn.textContent;
     
-    // Deshabilitamos el botón para evitar que hagan doble clic
     btn.textContent = "Enviando...";
     btn.disabled = true;
 
+    // Creamos los datos para enviar a FormSubmit
     const formData = new FormData(form);
-    formData.append('es_ajax_contacto', 'true');
+    
+    // Configuraciones extras para FormSubmit (Opcionales para mejorar el correo)
+    formData.append('_subject', 'Nueva Consulta - Bodega El Vecino');
+    formData.append('_captcha', 'false'); // Desactiva el molesto captcha mecánico
 
-    fetch('contactos.php', {
+    // Enviamos directamente al puente de FormSubmit con tu correo
+    fetch('https://formsubmit.co/ajax/wolfdancelxd@gmail.com', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
-        // Reactivamos el botón original
         btn.textContent = originalText;
         btn.disabled = false;
 
-        if (data.success) {
-            // Toast verde y limpiamos el formulario
-            crearToastContacto(data.message, '#10b981');
+        // FormSubmit devuelve un campo 'success' en formato string o boolean si todo sale bien
+        if (data.success === "true" || data.success === true) {
+            crearToastContacto('¡Tu mensaje ha sido enviado con éxito! Te responderemos muy pronto.', '#10b981');
             form.reset();
         } else {
-            // Toast rojo para errores
-            crearToastContacto(data.message, '#ef4444');
+            crearToastContacto('Ocurrió un problema al procesar el formulario con FormSubmit.', '#ef4444');
         }
     })
     .catch(error => {
