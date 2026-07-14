@@ -169,7 +169,7 @@ document.getElementById('form-consulta').addEventListener('submit', function(eve
     const formData = new FormData(form);
     formData.append('es_ajax_contacto', 'true');
 
-    fetch('contacto.php', {
+    fetch('contactos.php', {
         method: 'POST',
         body: formData
     })
