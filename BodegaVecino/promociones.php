@@ -1,374 +1,404 @@
 <?php 
+// 1. INICIALIZAMOS LA SESIÓN ARRIBA DE TODO
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Inicializar el carrito si no existe
-if (!isset($_SESSION['carrito'])) {
-    $_SESSION['carrito'] = [];
-}
+// 2. DETECTAMOS SI SE ENVIÓ UN PRODUCTO AL CARRITO DESDE ESTA PÁGINA (Petición AJAX / Sin pestañeo)
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ajax_agregar'])) {
+    $id = $_POST['producto_id'];
+    $nombre = $_POST['producto_nombre'];
+    $precio = (float)$_POST['producto_precio'];
+    $imagen = $_POST['producto_imagen'];
 
-// 2. DETECTAMOS PETICIONES POST (Sea AJAX o Clásica)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_SESSION['carrito'])) { 
+        $_SESSION['carrito'] = []; 
+    }
+
+    if (isset($_SESSION['carrito'][$id])) {
+        $_SESSION['carrito'][$id]['cantidad'] += 1;
+    } else {
+        $_SESSION['carrito'][$id] = [
+            'nombre' => $nombre, 
+            'precio' => $precio, 
+            'imagen' => $imagen, 
+            'cantidad' => 1
+        ];
+    }
     
-    // 1. VACIAR EL CARRITO COMPLETAMENTE
-    if (isset($_POST['accion_vaciar'])) {
-        $_SESSION['carrito'] = [];
-    }
+    // Lista de stocks iniciales mapeada para las promociones vigentes
+    $stocks_iniciales = [
+        '1' => 45,  // Arroz Costeño
+        '3' => 60,  // Azúcar Blanca
+        '5' => 120, // Coca Cola 2L
+        '9' => 55,  // Leche Gloria
+        '21' => 60  // Galletas Oreo
+    ];
 
-    // 2. ELIMINAR UN PRODUCTO INDIVIDUAL
-    if (isset($_POST['accion_eliminar'])) {
-        $id_eliminar = $_POST['producto_id'];
-        if (isset($_SESSION['carrito'][$id_eliminar])) {
-            unset($_SESSION['carrito'][$id_eliminar]);
-        }
-    }
-    
-    // 3. SUMAR / RESTAR CANTIDADES
-    if (isset($_POST['accion_cantidad'])) {
-        $id_modificar = $_POST['producto_id'];
-        $tipo = $_POST['accion_cantidad'];
-        
-        if ($tipo === 'sumar') {
-            if (isset($_SESSION['carrito'][$id_modificar])) {
-                $_SESSION['carrito'][$id_modificar]['cantidad'] += 1;
-            } else if (!empty($_POST['nombre'])) {
-                $_SESSION['carrito'][$id_modificar] = [
-                    'nombre'   => $_POST['nombre'],
-                    'precio'   => (float)$_POST['precio'],
-                    'imagen'   => $_POST['imagen'],
-                    'cantidad' => 1
-                ];
-            }
-        }
-        
-        if ($tipo === 'restar') {
-            if (isset($_SESSION['carrito'][$id_modificar])) {
-                $_SESSION['carrito'][$id_modificar]['cantidad'] -= 1;
-                if ($_SESSION['carrito'][$id_modificar]['cantidad'] <= 0) {
-                    unset($_SESSION['carrito'][$id_modificar]);
-                }
-            }
-        }
-    }
+    $stock_inicial = $stocks_iniciales[$id] ?? 0;
+    $cantidad_en_carrito = $_SESSION['carrito'][$id]['cantidad'];
+    $nuevo_stock = max(0, $stock_inicial - $cantidad_en_carrito);
 
-    // --- RESPUESTA AJAX QUIRÚRGICA ---
-    if (isset($_POST['is_ajax']) && $_POST['is_ajax'] === 'true') {
-        // Recalculamos estadísticas del carrito en caliente
-        $total_articulos = 0;
-        $subtotal_carrito = 0.00;
-        $item_subtotal_actualizado = 0.00;
-        $item_cantidad_actualizada = 0;
-        $existe_item = false;
+    // Sumamos el total de ítems en carrito para actualizar el header global
+    $total_items = array_sum(array_column($_SESSION['carrito'], 'cantidad'));
 
-        foreach ($_SESSION['carrito'] as $id => $item) {
-            $total_articulos += $item['cantidad'];
-            $subtotal_carrito += ($item['precio'] * $item['cantidad']);
-            
-            if (isset($id_modificar) && $id == $id_modificar) {
-                $item_subtotal_actualizado = $item['precio'] * $item['cantidad'];
-                $item_cantidad_actualizada = $item['cantidad'];
-                $existe_item = true;
-            }
-        }
-
-        $costo_delivery = ($subtotal_carrito > 20.00 || $subtotal_carrito == 0) ? 0.00 : 5.00;
-        $total_final = $subtotal_carrito + $costo_delivery;
-
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => true,
-            'total_articulos' => $total_articulos,
-            'subtotal_carrito' => number_format($subtotal_carrito, 2),
-            'costo_delivery' => $costo_delivery == 0 ? 'Gratis' : 'S/ ' . number_format($costo_delivery, 2),
-            'total_final' => number_format($total_final, 2),
-            // Datos del ítem modificado individualmente
-            'id_modificado' => $id_modificar ?? null,
-            'existe_item' => $existe_item,
-            'item_cantidad' => $item_cantidad_actualizada,
-            'item_subtotal' => number_format($item_subtotal_actualizado, 2)
-        ]);
-        exit();
-    }
-
-    // Si por alguna razón es una petición clásica, redirecciona normalmente
-    header("Location: carrito.php");
+    // Respondemos JSON inmediato
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'nombre' => $nombre,
+        'nuevo_stock' => $nuevo_stock,
+        'total_items' => $total_items
+    ]);
     exit();
 }
 
-// Cálculos iniciales para la carga síncrona
-$total_articulos = 0;
-$subtotal_carrito = 0.00;
-
-foreach ($_SESSION['carrito'] as $item) {
-    $total_articulos += $item['cantidad'];
-    $subtotal_carrito += ($item['precio'] * $item['cantidad']);
-}
-
-$costo_delivery = ($subtotal_carrito > 20.00 || $subtotal_carrito == 0) ? 0.00 : 5.00;
-$total_final = $subtotal_carrito + $costo_delivery;
-
-include 'include/header.php';
+include 'include/header.php'; 
 ?>
 
-<main style="background-color: #f8f9fa; padding: 40px 20px; font-family: sans-serif; min-height: 80vh; box-sizing: border-box;">
-    <div style="max-width: 1200px; margin: 0 auto;" id="contenedor-principal-carrito">
-
-        <section id="seccion-vacio" style="<?php echo ($total_articulos === 0) ? 'display: block;' : 'display: none;'; ?> background: white; padding: 60px 40px; text-align: center; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); max-width: 600px; margin: 40px auto;">
-            <div style="background-color: #f3f4f6; width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" width="50" height="50">
-                    <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+<div id="page-promociones">
+    <section class="hero-promo">
+          <div class="promo-text">
+             <div class="promo-img">
+                <img src="img/Sale Price Tag.png" alt="">
             </div>
-            <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin: 0 0 10px 0;">Tu carrito está vacío</h2>
-            <p style="color: #6b7280; font-size: 15px; margin-bottom: 30px; margin-top: 0;">Agrega productos desde nuestro catálogo para comenzar tu compra</p>
-            <a href="productos.php" style="display: inline-flex; align-items: center; justify-content: center; background-color: #dc2626; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="margin-right: 8px;">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                Ir a Productos
-            </a>
-        </section>
-
-        <div id="seccion-con-productos" style="<?php echo ($total_articulos > 0) ? 'display: block;' : 'display: none;'; ?>">
-            
-            <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 5px; color: #111827;">Carrito de Compras</h1>
-            <p style="color: #6b7280; font-size: 14px; margin-bottom: 30px;">Revisa tus productos antes de finalizar la compra</p>
-            
-            <div style="display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start;">
-                
-                <div style="flex: 2; min-width: 320px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 24px;">
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px;">
-                        <h2 style="font-size: 18px; font-weight: bold; color: #111827; margin: 0;">Productos (<span class="js-total-items-badge"><?php echo $total_articulos; ?></span>)</h2>
-                        <form class="js-form-carrito" style="margin: 0;">
-                            <input type="hidden" name="accion_vaciar" value="1">
-                            <button type="submit" style="background: none; border: none; color: #dc2626; font-weight: 600; cursor: pointer; font-size: 14px;">Vaciar Carrito</button>
-                        </form>
-                    </div>
-
-                    <div id="wrapper-productos-carrito">
-                        <?php foreach ($_SESSION['carrito'] as $id => $item): 
-                            $subtotal_item = $item['precio'] * $item['cantidad'];
-                            
-                            $categoria = "Abarrotes";
-                            if (strpos(strtolower($item['nombre']), 'queso') !== false || strpos(strtolower($item['nombre']), 'leche') !== false) {
-                                $categoria = "Lácteos";
-                            }
-                        ?>
-                            <div class="js-product-row" data-id="<?php echo $id; ?>" style="display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid #f3f4f6; flex-wrap: wrap;">
-                                
-                                <div style="width: 90px; height: 90px; min-width: 90px; max-width: 90px; overflow: hidden; border-radius: 8px; border: 1px solid #e5e7eb;">
-                                    <img src="<?php echo htmlspecialchars($item['imagen']); ?>" alt="" style="width: 100%; height: 100%; object-fit: cover;">
-                                </div>
-                                
-                                <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; justify-content: space-between;">
-                                    <div>
-                                        <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #111827;"><?php echo htmlspecialchars($item['nombre']); ?></h3>
-                                        <span style="font-size: 13px; color: #9ca3af; display: block; margin-bottom: 8px;"><?php echo $categoria; ?></span>
-                                        <span style="font-size: 16px; font-weight: bold; color: #dc2626;">S/ <?php echo number_format($item['precio'], 2); ?></span>
-                                    </div>
-                                    
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
-                                        <form class="js-form-carrito" style="margin: 0;">
-                                            <input type="hidden" name="producto_id" value="<?php echo $id; ?>">
-                                            <input type="hidden" name="accion_cantidad" value="restar">
-                                            <button type="submit" style="width: 28px; height: 28px; background-color: #f3f4f6; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #4b5563;">−</button>
-                                        </form>
-                                        
-                                        <span class="js-item-cantidad" style="font-weight: 600; font-size: 14px; width: 20px; text-align: center; color: #111827;"><?php echo $item['cantidad']; ?></span>
-                                        
-                                        <form class="js-form-carrito" style="margin: 0;">
-                                            <input type="hidden" name="producto_id" value="<?php echo $id; ?>">
-                                            <input type="hidden" name="accion_cantidad" value="sumar">
-                                            <button type="submit" style="width: 28px; height: 28px; background-color: #f3f4f6; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #4b5563;">+</button>
-                                        </form>
-                                    </div>
-                                </div>
-                                
-                                <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; min-width: 100px; margin-left: auto;">
-                                    <form class="js-form-carrito" style="margin: 0;">
-                                        <input type="hidden" name="producto_id" value="<?php echo $id; ?>">
-                                        <input type="hidden" name="accion_eliminar" value="1">
-                                        <button type="submit" style="background: none; border: none; color: #9ca3af; cursor: pointer; padding: 4px;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#9ca3af'">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                            </svg>
-                                        </button>
-                                    </form>
-                                    
-                                    <div style="text-align: right;">
-                                        <span style="font-size: 12px; color: #9ca3af; display: block; margin-bottom: 2px;">Subtotal</span>
-                                        <span style="font-weight: bold; color: #111827; font-size: 15px;">S/ <span class="js-item-subtotal"><?php echo number_format($subtotal_item, 2); ?></span></span>
-                                    </div>
-                                </div>
-
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                <h1>Promociones Especiales</h1>
+                <p>Aprovecha nuestros descuentos exclusivos de la semana</p>
+                <div class="hero-btns">
+                    <div class="cuadro-yellow">Válido hasta el Domingo 15 de Junio</div>
                 </div>
-                
-                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px;">
-                    
-                    <div style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 24px;">
-                        <h2 style="font-size: 18px; font-weight: bold; color: #111827; margin: 0 0 20px 0; border-bottom: 1px solid #f3f4f6; padding-bottom: 12px;">Resumen del Pedido</h2>
-                        
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; color: #4b5563;">
-                            <span>Subtotal</span>
-                            <span style="color: #111827; font-weight: 500;">S/ <span id="resumen-subtotal"><?php echo number_format($subtotal_carrito, 2); ?></span></span>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 15px; color: #4b5563; border-bottom: 1px solid #f3f4f6; padding-bottom: 16px;">
-                            <span>Delivery</span>
-                            <span id="resumen-delivery" style="<?php echo ($costo_delivery == 0.00) ? 'color: #eab308; font-weight: bold;' : 'color: #111827; font-weight: 500;'; ?>">
-                                <?php echo ($costo_delivery == 0.00) ? 'Gratis' : 'S/ ' . number_format($costo_delivery, 2); ?>
-                            </span>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                            <span style="font-size: 16px; font-weight: bold; color: #111827;">Total</span>
-                            <span style="font-size: 20px; font-weight: bold; color: #dc2626;">S/ <span id="resumen-total"><?php echo number_format($total_final, 2); ?></span></span>
-                        </div>
-                        
-                        <?php if (isset($_SESSION['usuario_id'])): ?>
-                            <a href="procesar_compra.php" style="display: block; width: 100%; text-align: center; background-color: #dc2626; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; text-decoration: none; box-sizing: border-box;">
-                                Finalizar Compra
-                            </a>
-                        <?php else: ?>
-                            <button onclick="document.getElementById('modalLogin').style.display='flex'" style="width: 100%; background-color: #dc2626; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px;">
-                                Finalizar Compra
-                            </button>
-                        <?php endif; ?>
-                        
-                        <a href="productos.php" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background-color: #f3f4f6; color: #4b5563; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 600; text-decoration: none; box-sizing: border-box; text-align: center; border: 1px solid #e5e7eb;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="19" y1="12" x2="5" y2="12"></line>
-                                <polyline points="12 19 5 12 12 5"></polyline>
-                            </svg>
-                            Seguir Comprando
-                        </a>
-                    </div>
-                    
-                    <div style="background-color: #fefce8; border: 1px solid #fef08a; border-radius: 12px; padding: 16px; font-size: 13px; color: #713f12; line-height: 1.5;">
-                        <strong style="color: #854d0e;">Delivery Gratis</strong> en compras mayores a S/ 20.00
-                    </div>
-                    
-                </div>
-                
             </div>
-            
-        </div>
-        
+    </section>
+
+    <main>
+
+<!--Promo tops principales-->
+<div class="container-promo">
+    <div class="top">
+       <div class="cont-top">
+         <div class="logo-top"><p>Top 1</p></div>
+         <h2>Coca cola 2 Litros</h2>
+         <div>
+           <span class="price-current">S/ 4.40</span>
+           <span class="price-original">S/5.50</span>
+         </div>
+         <p>Ahorra S/1.10</p>
+       </div>
+       <div class="cont-desc"><p>-20%</p></div>
     </div>
-</main>
 
-<div id="modalLogin" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:white; padding:30px; border-radius:12px; text-align:center; max-width:400px; width:90%; box-shadow:0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;">
-        <h3 style="margin-top:0; color:#111827; font-size: 20px; font-weight: bold;">¡Ups! Debes iniciar sesión</h3>
-        <p style="color:#6b7280; margin-bottom:25px; font-size: 14px; line-height: 1.5;">Para finalizar tu compra y procesar tu pedido, por favor entra a tu cuenta.</p>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <a href="sesion.php" style="background:#dc2626; color:white; padding:12px; border-radius:8px; text-decoration:none; font-weight:bold; font-size: 15px; display: block;">Ir al Login</a>
-            <button onclick="document.getElementById('modalLogin').style.display='none'" style="background:none; border:1px solid #d1d5db; padding:10px; border-radius:8px; cursor:pointer; color: #4b5563; font-weight: 600; font-size: 14px;">Cerrar</button>
+    <div class="top">
+        <div class="cont-top">
+          <div class="logo-top"><p>Top 2</p></div>
+          <h2>Azúcar Blanca 1kg</h2>
+          <div>
+             <span class="price-current">S/ 2.72</span>
+             <span class="price-original">S/3.20</span>
+          </div>
+          <p>Ahorra S/ 3.20</p>
+        </div>   
+        <div class="cont-desc"><p>-15%</p></div>  
+    </div>
+
+    <div class="top">
+        <div class="cont-top">
+            <div class="logo-top"><p>Top 3</p></div>
+            <h2>Detergente Ariel 1kg</h2>
+            <div>
+              <span class="price-current">S/ 13.64</span>
+              <span class="price-original">S/15.50</span>
+            </div>
+            <p>Ahorra S/ 1.86</p>
         </div>
+        <div class="cont-desc"><p>-12%</p></div>
     </div>
 </div>
 
+<!--Encabezado promociones-->
+        <div class="promotions-header">
+            <h1>Promociones Vigentes</h1>
+            <p>Descuentos especiales para ti esta semana</p>
+        </div>
+
+<!--Categoria de promociones en un grid-->
+        <div class="promotions-grid">
+            
+            <!-- PRODUCTO 1: Arroz Costeño (ID 1 de tu catálogo) -->
+            <?php
+            $stock_inicial_1 = 45;
+            $cant_carrito_1 = isset($_SESSION['carrito']['1']) ? $_SESSION['carrito']['1']['cantidad'] : 0;
+            $stock_final_1 = $stock_inicial_1 - $cant_carrito_1;
+            ?>
+            <div class="promo-product-card">
+                <div class="product-img" style="height:200px;">
+                    <div class="product-img-ph"><img src="https://plazavea.vteximg.com.br/arquivos/ids/27552446-512-512/433778.jpg" alt=""></div><span class="discount-badge">-10%</span>
+                    
+                    <span class="stock-badge js-stock-label">
+                        <?php if ($stock_final_1 > 0): ?>
+                            <img src="img/Cardboard Box.png" alt=""> <span class="stock-numero"><?php echo $stock_final_1; ?></span> disponibles
+                        <?php else: ?>
+                            <span class="badge-agotado" style="color: #ff4d4d; font-weight: bold;">Agotado</span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <form class="product-body form-agregar-carrito">
+                    <span class="product-category">Abarrotes</span>
+                    <div class="product-name">Arroz Costeño 1kg</div>
+                    <div class="product-price"><span class="price-current">S/ 4.05</span><span class="price-original">S/ 4.50</span></div>
+                    
+                    <input type="hidden" name="producto_id" value="1">
+                    <input type="hidden" name="producto_nombre" value="Arroz Costeño 1kg">
+                    <input type="hidden" name="producto_precio" value="4.05">
+                    <input type="hidden" name="producto_imagen" value="https://plazavea.vteximg.com.br/arquivos/ids/27552446-512-512/433778.jpg">
+                    
+                    <button type="submit" class="btn-add-cart js-btn-submit" <?php echo ($stock_final_1 <= 0) ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : ''; ?>>
+                        <?php echo ($stock_final_1 > 0) ? '<img src="img/Shopping Cart.png" alt=""> Agregar al Carrito' : 'Agotado'; ?>
+                    </button>
+                </form>
+            </div>
+
+            <!-- PRODUCTO 2: Azúcar Blanca (ID 3 de tu catálogo) -->
+            <?php
+            $stock_inicial_3 = 60;
+            $cant_carrito_3 = isset($_SESSION['carrito']['3']) ? $_SESSION['carrito']['3']['cantidad'] : 0;
+            $stock_final_3 = $stock_inicial_3 - $cant_carrito_3;
+            ?>
+            <div class="promo-product-card">
+                <div class="product-img" style="height:200px;">
+                    <div class="product-img-ph"><img src="https://plazavea.vteximg.com.br/arquivos/ids/423250-450-450/20198551.jpg?v=637377101398200000" alt=""></div><span class="discount-badge">-15%</span>
+                    
+                    <span class="stock-badge js-stock-label">
+                        <?php if ($stock_final_3 > 0): ?>
+                            <img src="img/Cardboard Box.png" alt=""> <span class="stock-numero"><?php echo $stock_final_3; ?></span> disponibles
+                        <?php else: ?>
+                            <span class="badge-agotado" style="color: #ff4d4d; font-weight: bold;">Agotado</span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <form class="product-body form-agregar-carrito">
+                    <span class="product-category">Abarrotes</span>
+                    <div class="product-name">Azúcar Blanca 1kg</div>
+                    <div class="product-price"><span class="price-current">S/ 2.72</span><span class="price-original">S/ 3.20</span></div>
+                    
+                    <input type="hidden" name="producto_id" value="3">
+                    <input type="hidden" name="producto_nombre" value="Azúcar Blanca 1kg">
+                    <input type="hidden" name="producto_precio" value="2.72">
+                    <input type="hidden" name="producto_imagen" value="https://plazavea.vteximg.com.br/arquivos/ids/423250-450-450/20198551.jpg?v=637377101398200000">
+                    
+                    <button type="submit" class="btn-add-cart js-btn-submit" <?php echo ($stock_final_3 <= 0) ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : ''; ?>>
+                        <?php echo ($stock_final_3 > 0) ? '<img src="img/Shopping Cart.png" alt=""> Agregar al Carrito' : 'Agotado'; ?>
+                    </button>
+                </form>
+            </div>
+
+            <!-- PRODUCTO 3: Coca Cola (ID 5 de tu catálogo) -->
+            <?php
+            $stock_inicial_5 = 120;
+            $cant_carrito_5 = isset($_SESSION['carrito']['5']) ? $_SESSION['carrito']['5']['cantidad'] : 0;
+            $stock_final_5 = $stock_inicial_5 - $cant_carrito_5;
+            ?>
+            <div class="promo-product-card">
+                <div class="product-img" style="height:200px;">
+                    <div class="product-img-ph"><img src="https://wongfood.vtexassets.com/arquivos/ids/681539/Twopack-Gaseosa-Coca-Cola-Sabor-Original-Botella-2-5L-1-256656667.jpg?v=638381183635800000" alt=""></div><span class="discount-badge">-20%</span>
+                    
+                    <span class="stock-badge js-stock-label">
+                        <?php if ($stock_final_5 > 0): ?>
+                            <img src="img/Cardboard Box.png" alt=""> <span class="stock-numero"><?php echo $stock_final_5; ?></span> disponibles
+                        <?php else: ?>
+                            <span class="badge-agotado" style="color: #ff4d4d; font-weight: bold;">Agotado</span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <form class="product-body form-agregar-carrito">
+                    <span class="product-category">Bebidas</span>
+                    <div class="product-name">Coca Cola 2L</div>
+                    <div class="product-price"><span class="price-current">S/ 4.40</span><span class="price-original">S/ 5.50</span></div>
+                    
+                    <input type="hidden" name="producto_id" value="5">
+                    <input type="hidden" name="producto_nombre" value="Coca Cola 2L">
+                    <input type="hidden" name="producto_precio" value="4.40">
+                    <input type="hidden" name="producto_imagen" value="https://wongfood.vtexassets.com/arquivos/ids/681539/Twopack-Gaseosa-Coca-Cola-Sabor-Original-Botella-2-5L-1-256656667.jpg?v=638381183635800000">
+                    
+                    <button type="submit" class="btn-add-cart js-btn-submit" <?php echo ($stock_final_5 <= 0) ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : ''; ?>>
+                        <?php echo ($stock_final_5 > 0) ? '<img src="img/Shopping Cart.png" alt=""> Agregar al Carrito' : 'Agotado'; ?>
+                    </button>
+                </form>
+            </div>
+
+            <!-- PRODUCTO 4: Leche Gloria (ID 9 de tu catálogo) -->
+            <?php
+            $stock_inicial_9 = 55;
+            $cant_carrito_9 = isset($_SESSION['carrito']['9']) ? $_SESSION['carrito']['9']['cantidad'] : 0;
+            $stock_final_9 = $stock_inicial_9 - $cant_carrito_9;
+            ?>
+            <div class="promo-product-card">
+                <div class="product-img" style="height:200px;">
+                    <div class="product-img-ph"><img src="https://plazavea.vteximg.com.br/arquivos/ids/35081437-418-418/358217.jpg" alt=""></div><span class="discount-badge">-8%</span>
+                    
+                    <span class="stock-badge js-stock-label">
+                        <?php if ($stock_final_9 > 0): ?>
+                            <img src="img/Cardboard Box.png" alt=""> <span class="stock-numero"><?php echo $stock_final_9; ?></span> disponibles
+                        <?php else: ?>
+                            <span class="badge-agotado" style="color: #ff4d4d; font-weight: bold;">Agotado</span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <form class="product-body form-agregar-carrito">
+                    <span class="product-category">Lácteos</span>
+                    <div class="product-name">Leche Gloria 1L</div>
+                    <div class="product-price"><span class="price-current">S/ 3.86</span><span class="price-original">S/ 4.20</span></div>
+                    
+                    <input type="hidden" name="producto_id" value="9">
+                    <input type="hidden" name="producto_nombre" value="Leche Gloria 1L">
+                    <input type="hidden" name="producto_precio" value="3.86">
+                    <input type="hidden" name="producto_imagen" value="https://plazavea.vteximg.com.br/arquivos/ids/35081437-418-418/358217.jpg">
+                    
+                    <button type="submit" class="btn-add-cart js-btn-submit" <?php echo ($stock_final_9 <= 0) ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : ''; ?>>
+                        <?php echo ($stock_final_9 > 0) ? '<img src="img/Shopping Cart.png" alt=""> Agregar al Carrito' : 'Agotado'; ?>
+                    </button>
+                </form>
+            </div>
+
+            <!-- PRODUCTO 5: Galletas Oreo (ID 21) -->
+            <?php
+            $stock_inicial_21 = 60;
+            $cant_carrito_21 = isset($_SESSION['carrito']['21']) ? $_SESSION['carrito']['21']['cantidad'] : 0;
+            $stock_final_21 = $stock_inicial_21 - $cant_carrito_21;
+            ?>
+            <div class="promo-product-card">
+                <div class="product-img" style="height:200px;">
+                    <div class="product-img-ph"><img src="https://vegaperu.vtexassets.com/arquivos/ids/166990/142304.jpg?v=638596857101470000" alt=""></div><span class="discount-badge">-8%</span>
+                    
+                    <span class="stock-badge js-stock-label">
+                        <?php if ($stock_final_21 > 0): ?>
+                            <img src="img/Cardboard Box.png" alt=""> <span class="stock-numero"><?php echo $stock_final_21; ?></span> disponibles
+                        <?php else: ?>
+                            <span class="badge-agotado" style="color: #ff4d4d; font-weight: bold;">Agotado</span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <form class="product-body form-agregar-carrito">
+                    <span class="product-category">Snacks</span>
+                    <div class="product-name">Galletas Oreo 432g</div>
+                    <div class="product-price"><span class="price-current">S/ 6.48</span><span class="price-original">S/ 7.20</span></div>
+                    
+                    <input type="hidden" name="producto_id" value="21">
+                    <input type="hidden" name="producto_nombre" value="Galletas Oreo 432g">
+                    <input type="hidden" name="producto_precio" value="6.48">
+                    <input type="hidden" name="producto_imagen" value="https://vegaperu.vtexassets.com/arquivos/ids/166990/142304.jpg?v=638596857101470000">
+                    
+                    <button type="submit" class="btn-add-cart js-btn-submit" <?php echo ($stock_final_21 <= 0) ? 'disabled style="background-color: #ccc; cursor: not-allowed;"' : ''; ?>>
+                        <?php echo ($stock_final_21 > 0) ? '<img src="img/Shopping Cart.png" alt=""> Agregar al Carrito' : 'Agotado'; ?>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="promo-sub-cta">
+            <h3>¿Quieres recibir nuestras promociones?</h3>
+            <p>Suscríbete a nuestro WhatsApp para recibir ofertas exclusivas</p>
+            <button class="btn-whatsapp">Suscribirme por WhatsApp</button>
+        </div>
+    </div>
+ </main>
+
+<!-- CONTENEDOR DINÁMICO DE NOTIFICACIONES TOAST (JS) -->
+<div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const formularios = document.querySelectorAll('.form-agregar-carrito');
     
-    // Función central para interceptar los formularios del carrito
-    document.addEventListener('submit', function(e) {
-        const form = e.target.closest('.js-form-carrito');
-        if (!form) return; // Si no es un formulario del carrito, lo ignoramos
+    formularios.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Evitamos que la página recargue o haga un salto
+            e.stopPropagation();
 
-        e.preventDefault();
-        e.stopPropagation();
+            const formData = new FormData(this);
+            formData.append('ajax_agregar', 'true'); // Enviamos la señal para el procesamiento de AJAX
 
-        const formData = new FormData(form);
-        formData.append('is_ajax', 'true'); // Le indicamos al servidor que responda JSON
+            const tarjetaProducto = this.closest('.promo-product-card');
+            const botonSubmit = this.querySelector('.js-btn-submit');
 
-        fetch('carrito.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // 1. Si el carrito quedó completamente vacío, mostramos la sección vacía
-                if (data.total_articulos <= 0) {
-                    document.getElementById('seccion-con-productos').style.display = 'none';
-                    document.getElementById('seccion-vacio').style.display = 'block';
+            fetch('promociones.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 1. Mostrar cartelito flotante apilable en la esquina
+                    crearToast(data.nombre);
+
+                    // 2. Modificación de Stock Quirúrgica sin pestañear
+                    const tagNumeroStock = tarjetaProducto.querySelector('.stock-numero');
+                    const labelStockCompleto = tarjetaProducto.querySelector('.js-stock-label');
                     
-                    // Actualizar contador del header a 0
-                    actualizarHeaderBadge(0);
-                    return;
-                }
-
-                // 2. Si fue una acción de vaciar completo (pero que por error no redujo a 0)
-                if (formData.has('accion_vaciar')) {
-                    document.getElementById('seccion-con-productos').style.display = 'none';
-                    document.getElementById('seccion-vacio').style.display = 'block';
-                    actualizarHeaderBadge(0);
-                    return;
-                }
-
-                // 3. Modificación quirúrgica del producto modificado
-                if (data.id_modificado) {
-                    const productRow = document.querySelector(`.js-product-row[data-id="${data.id_modificado}"]`);
-                    
-                    if (productRow) {
-                        if (data.existe_item) {
-                            // Si el ítem aún existe, actualizamos su cantidad y su subtotal individual
-                            const cantLabel = productRow.querySelector('.js-item-cantidad');
-                            const subtotalLabel = productRow.querySelector('.js-item-subtotal');
-                            
-                            if (cantLabel) cantLabel.textContent = data.item_cantidad;
-                            if (subtotalLabel) subtotalLabel.textContent = data.item_subtotal;
-                        } else {
-                            // Si fue restado hasta llegar a 0 o se usó el botón eliminar: removemos el nodo de la interfaz de forma limpia
-                            productRow.remove();
+                    if (data.nuevo_stock > 0) {
+                        if (tagNumeroStock) {
+                            tagNumeroStock.textContent = data.nuevo_stock;
                         }
-                    }
-                }
-
-                // 4. Actualizamos los badges e indicadores de cantidades totales
-                const badgeArticulos = document.querySelector('.js-total-items-badge');
-                if (badgeArticulos) badgeArticulos.textContent = data.total_articulos;
-
-                actualizarHeaderBadge(data.total_articulos);
-
-                // 5. Actualizamos el cuadro resumen de precios lateral
-                document.getElementById('resumen-subtotal').textContent = data.subtotal_carrito;
-                
-                const deliveryLabel = document.getElementById('resumen-delivery');
-                if (deliveryLabel) {
-                    deliveryLabel.textContent = data.costo_delivery;
-                    if (data.costo_delivery === 'Gratis') {
-                        deliveryLabel.style.color = '#eab308';
-                        deliveryLabel.style.fontWeight = 'bold';
                     } else {
-                        deliveryLabel.style.color = '#111827';
-                        deliveryLabel.style.fontWeight = '500';
+                        // Si se agota, transformamos el contenedor de stock a Agotado
+                        if (labelStockCompleto) {
+                            labelStockCompleto.innerHTML = `<span class="badge-agotado" style="color: #ff4d4d; font-weight: bold;">Agotado</span>`;
+                        }
+                        // Deshabilitar el botón de agregar
+                        botonSubmit.disabled = true;
+                        botonSubmit.style.backgroundColor = '#ccc';
+                        botonSubmit.style.cursor = 'not-allowed';
+                        botonSubmit.innerHTML = 'Agotado';
+                    }
+
+                    // 3. Actualizar el contador del header de forma dinámica
+                    const cartBadge = document.querySelector('.cart-count') || document.querySelector('.carrito-count') || document.querySelector('[class*="cart"] span');
+                    if (cartBadge) {
+                        cartBadge.textContent = data.total_items;
                     }
                 }
-
-                document.getElementById('resumen-total').textContent = data.total_final;
-            }
-        })
-        .catch(error => {
-            console.error('Error al actualizar el carrito mediante AJAX:', error);
+            })
+            .catch(error => {
+                console.error('Error al procesar la petición AJAX:', error);
+            });
         });
     });
-
-    // Función auxiliar para actualizar el contador de ítems del header
-    function actualizarHeaderBadge(totalItems) {
-        const cartBadge = document.querySelector('.cart-count') || document.querySelector('.carrito-count') || document.querySelector('[class*="cart"] span');
-        if (cartBadge) {
-            cartBadge.textContent = totalItems;
-        }
-    }
 });
+
+// Función creadora de notificaciones sin recargar página (Elegante y flotante)
+function crearToast(nombreProducto) {
+    const contenedor = document.getElementById("toast-container");
+    
+    const nuevoToast = document.createElement("div");
+    // Estilos limpios, profesionales y idénticos a productos.php
+    nuevoToast.style.marginBottom = "10px";
+    nuevoToast.style.display = "flex";
+    nuevoToast.style.alignItems = "center";
+    nuevoToast.style.backgroundColor = "#fff";
+    nuevoToast.style.color = "#333";
+    nuevoToast.style.padding = "12px 20px";
+    nuevoToast.style.borderRadius = "8px";
+    nuevoToast.style.boxShadow = "0 4px 15px rgba(0,0,0,0.15)";
+    nuevoToast.style.borderLeft = "5px solid #10b981";
+    nuevoToast.style.fontFamily = "sans-serif";
+    nuevoToast.style.fontSize = "14px";
+    nuevoToast.style.opacity = "1";
+    nuevoToast.style.transition = "opacity 0.4s ease";
+
+    nuevoToast.innerHTML = `
+        <span style="display:inline-flex; align-items:center; justify-content:center; background-color:#10b981; color:white; width:20px; height:20px; border-radius:50%; margin-right:10px; font-weight:bold; font-size:12px;">✓</span>
+        <span><strong>${nombreProducto}</strong> agregado al carrito</span>
+    `;
+
+    contenedor.appendChild(nuevoToast);
+
+    // Desvanecer y remover de forma programada
+    setTimeout(() => {
+        nuevoToast.style.opacity = "0";
+        setTimeout(() => nuevoToast.remove(), 400);
+    }, 3000);
+}
 </script>
 
-<?php include 'include/footer.php'; ?>
+<?php 
+ include 'include/footer.php';
+?>
