@@ -21,11 +21,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btn_agregar'])) {
     if (isset($_SESSION['carrito'][$id])) {
         $_SESSION['carrito'][$id]['cantidad'] += 1;
     } else {
-        $_SESSION['carrito'][$id] = ['nombre' => $nombre, 'precio' => $precio, 'imagen' => $imagen, 'cantidad' => 1];
+        $_SESSION['carrito'][$id] = [
+            'nombre' => $nombre, 
+            'precio' => $precio, 
+            'imagen' => $imagen, 
+            'cantidad' => 1
+        ];
     }
     
+    // Redireccionamos a la misma página pasando el nombre para evitar el reenvío de formulario al recargar
+    header("Location: index.php?agregado=" . urlencode($nombre));
+    exit();
+}
+
+// 3. CAPTURAMOS EL PARÁMETRO DE REDIRECCIÓN PARA MOSTRAR LA NOTIFICACIÓN
+if (isset($_GET['agregado'])) {
     $mostrar_notificacion = true;
-    $nombre_producto_agregado = $nombre;
+    $nombre_producto_agregado = $_GET['agregado'];
 }
 
 // Encabezado de la pagina con include
@@ -82,7 +94,6 @@ include 'include/header.php';
             </div>
             <div class="products-grid">
                 
-                <!-- PRODUCTO 1: Arroz Costeño -->
                 <?php
                 $stock_inicial_1 = 45;
                 $cant_carrito_1 = isset($_SESSION['carrito']['1']) ? $_SESSION['carrito']['1']['cantidad'] : 0;
@@ -122,7 +133,6 @@ include 'include/header.php';
                     </form>
                 </div>
 
-                <!-- PRODUCTO 3: Azúcar Blanca -->
                 <?php
                 $stock_inicial_3 = 60;
                 $cant_carrito_3 = isset($_SESSION['carrito']['3']) ? $_SESSION['carrito']['3']['cantidad'] : 0;
@@ -162,7 +172,6 @@ include 'include/header.php';
                     </form>
                 </div>
 
-                <!-- PRODUCTO 5: Coca Cola 2L -->
                 <?php
                 $stock_inicial_5 = 120;
                 $cant_carrito_5 = isset($_SESSION['carrito']['5']) ? $_SESSION['carrito']['5']['cantidad'] : 0;
@@ -202,7 +211,6 @@ include 'include/header.php';
                     </form>
                 </div>
 
-                <!-- PRODUCTO 9: Leche Gloria -->
                 <?php
                 $stock_inicial_9 = 55;
                 $cant_carrito_9 = isset($_SESSION['carrito']['9']) ? $_SESSION['carrito']['9']['cantidad'] : 0;
@@ -331,7 +339,6 @@ include 'include/header.php';
 
 </main>
 
-<!-- SCRIPT JAVASCRIPT MANTENEDOR DE SCROLL -->
 <script>
     // Guardamos la posición exacta en píxeles del scroll vertical antes de enviar el formulario
     document.addEventListener("submit", function() {
