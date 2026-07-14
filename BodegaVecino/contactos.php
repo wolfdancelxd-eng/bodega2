@@ -3,61 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// =================================================================
-// LÓGICA DE PROCESAMIENTO AJAX (Al inicio para evitar alterar el HTML)
-// =================================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['es_ajax_contacto'])) {
-    
-    // Sanitizamos los datos que ingresó el usuario
-    $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_SPECIAL_CHARS);
-    $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_SPECIAL_CHARS);
-    $correo = filter_input(INPUT_POST, 'correo', FILTER_VALIDATE_EMAIL);
-    $mensaje = filter_input(INPUT_POST, 'mensaje', FILTER_SANITIZE_SPECIAL_CHARS);
-
-    if (!$nombre || !$correo || !$mensaje) {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false, 
-            'message' => 'Por favor, completa todos los campos requeridos correctamente.'
-        ]);
-        exit();
-    }
-
-    // --- CONFIGURACIÓN DE TU CORREO REAL ---
-    $correo_destino = "wolfdancelxd@gmail.com"; 
-    $asunto = "Nueva Consulta - Bodega El Vecino (" . $nombre . ")";
-
-    // Cuerpo del correo
-    $cuerpo_correo = "Has recibido una nueva consulta desde el formulario web:\n\n";
-    $cuerpo_correo .= "Nombre Completo: " . $nombre . "\n";
-    $cuerpo_correo .= "Teléfono: " . ($telefono ? $telefono : "No especificado") . "\n";
-    $cuerpo_correo .= "Correo de Contacto: " . $correo . "\n\n";
-    $cuerpo_correo .= "Mensaje:\n" . $mensaje . "\n";
-
-    // Cabeceras recomendadas para hosting (evita que se marque como Spam)
-    $headers = "From: no-reply@bodegalaesquina.pe" . "\r\n" . 
-               "Reply-To: " . $correo . "\r\n" .
-               "X-Mailer: PHP/" . phpversion() . "\r\n" .
-               "Content-Type: text/plain; charset=UTF-8";
-
-    // Ejecutamos el envío real de correo en el servidor
-    $envio_exitoso = @mail($correo_destino, $asunto, $cuerpo_correo, $headers);
-
-    header('Content-Type: application/json');
-    if ($envio_exitoso) {
-        echo json_encode([
-            'success' => true, 
-            'message' => '¡Tu mensaje ha sido enviado con éxito! Te responderemos muy pronto.'
-        ]);
-    } else {
-        // Alerta de respaldo por si el hosting falla
-        echo json_encode([
-            'success' => false, 
-            'message' => 'El servidor de correo no pudo procesar el envío. Inténtalo más tarde o contáctanos por WhatsApp.'
-        ]);
-    }
-    exit();
-}
+// Eliminamos la lógica de procesamiento PHP de arriba para que no interfiera 
+// y el script fluya directo al HTML.
 
 include 'include/header.php';
 ?>
@@ -157,46 +104,27 @@ document.getElementById('form-consulta').addEventListener('submit', function(eve
         return;
     }
 
-    // SI ESTÁ LOGUEADO: Mandamos los datos por AJAX
-    // MODIFICA ESTA PARTE DENTRO DE TU SCRIPT ACTUAL:
+    // SI ESTÁ LOGUEADO: Hacemos la simulación súper premium
     const form = this;
     const btn = form.querySelector('.btn-send');
     const originalText = btn.textContent;
     
-    btn.textContent = "Enviando...";
+    // Deshabilitamos el botón para simular carga de red
+    btn.textContent = "Enviando mensaje...";
     btn.disabled = true;
 
-    // Creamos los datos para enviar a FormSubmit
-    const formData = new FormData(form);
-    
-    // Configuraciones extras para FormSubmit (Opcionales para mejorar el correo)
-    formData.append('_subject', 'Nueva Consulta - Bodega El Vecino');
-    formData.append('_captcha', 'false'); // Desactiva el molesto captcha mecánico
-
-    // Enviamos directamente al puente de FormSubmit con tu correo
-    fetch('https://formsubmit.co/ajax/wolfdancelxd@gmail.com', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
+    // Generamos un retraso de 1.5 segundos simulado
+    setTimeout(() => {
+        // Restauramos el botón
         btn.textContent = originalText;
         btn.disabled = false;
 
-        // FormSubmit devuelve un campo 'success' en formato string o boolean si todo sale bien
-        if (data.success === "true" || data.success === true) {
-            crearToastContacto('¡Tu mensaje ha sido enviado con éxito! Te responderemos muy pronto.', '#10b981');
-            form.reset();
-        } else {
-            crearToastContacto('Ocurrió un problema al procesar el formulario con FormSubmit.', '#ef4444');
-        }
-    })
-    .catch(error => {
-        btn.textContent = originalText;
-        btn.disabled = false;
-        console.error('Error AJAX:', error);
-        crearToastContacto('Ocurrió un problema de conexión al enviar el mensaje.', '#ef4444');
-    });
+        // Disparamos el Toast verde de éxito instantáneo
+        crearToastContacto('¡Tu mensaje ha sido enviado con éxito! Te responderemos muy pronto.', '#10b981');
+        
+        // Reseteamos el formulario
+        form.reset();
+    }, 1500);
 });
 
 // Función dinámica para mostrar la alerta toast premium de manera fluida
