@@ -1486,4 +1486,110 @@ body, html {
         gap: 15px;
         margin-top: 10px;
     }
+    @media (max-width: 768px) {
+    /* Forzamos al header a ocupar el ancho correcto de la pantalla */
+    header, .header, nav, .navbar {
+        width: 100% !important;
+        max-width: 100vw !important;
+        box-sizing: border-box;
+        padding: 10px !important;
+        display: flex;
+        flex-direction: column !important; /* Coloca logo arriba, menú al medio, botones abajo */
+        align-items: center;
+        gap: 12px;
+        height: auto !important; /* Evita que el contenido se salga por un alto fijo */
+    }
+
+    /* Contenedor de los enlaces del menú */
+    .nav-links, .menu-links, nav ul {
+        display: flex;
+        flex-wrap: wrap; /* Si no caben en una fila, bajan a la siguiente */
+        justify-content: center;
+        gap: 15px;
+        padding: 0;
+        margin: 5px 0;
+        width: 100%;
+    }
+
+    /* Enlaces individuales */
+    .nav-links a, nav ul li a {
+        font-size: 14px;
+        padding: 5px 8px;
+    }
+
+    /* Contenedor del carrito y el botón de Iniciar Sesión */
+    .header-actions, .auth-buttons, .right-menu {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        width: 100%;
+    }
+}
+@media (max-width: 768px) {
+    /* Contenedor principal del footer */
+    footer, .footer, .footer-container {
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding: 30px 20px !important;
+        box-sizing: border-box;
+    }
+
+    /* Contenedor que agrupa las columnas */
+    .footer-content, .footer-grid, .footer-layout {
+        display: flex !important;
+        flex-direction: column !important; /* Cambia de horizontal a vertical */
+        align-items: center !important;
+        text-align: center !important;
+        gap: 30px !important;
+        width: 100% !important;
+    }
+
+    /* Las columnas individuales de texto */
+    .footer-section, .footer-column, .footer-info {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+}
+
+    @media (max-width: 768px) {
+    /* Contenedor de las tarjetas de promociones */
+    .promociones-grid, .products-grid, .grid-container {
+        display: grid !important;
+        /* Cambia a 1 sola columna que ocupa todo el ancho disponible */
+        grid-template-columns: 1fr !important; 
+        gap: 20px !important;
+        width: 100% !important;
+        padding: 10px !important;
+        box-sizing: border-box;
+    }
+
+    /* Si usaban Flexbox en lugar de Grid */
+    .promociones-container, .products-flex-container {
+        display: flex !important;
+        flex-direction: column !important; /* Las apila una debajo de otra */
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    /* Aseguramos que las tarjetas no queden aplastadas */
+    .product-card, .promo-card {
+        width: 100% !important;
+        max-width: 320px; /* Un tamaño estándar cómodo para celulares */
+        margin: 0 auto;
+    }
+}
+    html, body {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important; /* Elimina por completo el scroll horizontal */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
 }
