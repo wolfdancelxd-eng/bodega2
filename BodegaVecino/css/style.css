@@ -1432,3 +1432,58 @@ footer {
         font-size: 15px;
     }
 }
+@media (max-width: 768px) {
+    /* Tu contenedor principal de navegación (ajusta la clase si se llama diferente, ej: .header-container o .nav) */
+    header, .navbar, .nav-container {
+        display: flex;
+        flex-wrap: wrap; /* Permite que los elementos bajen si no caben */
+        justify-content: center;
+        gap: 10px;
+        padding: 10px;
+        width: 100% !important;
+    }
+
+    /* Ocultar o reducir los textos de navegación para que no estorben */
+    .nav-links, .menu-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px; /* Un poco más pequeño en móvil */
+    }
+}
+body, html {
+    width: 100%;
+    overflow-x: hidden; /* Esto corta de raíz cualquier desborde horizontal lateral */
+}
+
+/* Forzar al banner rojo a ocupar el 100% real del ancho visible */
+.hero-section, .banner-rojo { /* Reemplaza con la clase real de tu banner rojo */
+    width: 100% !important;
+    box-sizing: border-box;
+}
+@media (max-width: 768px) {
+    /* El contenedor donde están todas las columnas del footer */
+    .footer-container, .footer-content { 
+        display: flex;
+        flex-direction: column !important; /* Apila los bloques verticalmente */
+        align-items: center;
+        text-align: center;
+        gap: 20px;
+        width: 100% !important;
+    }
+
+    /* Cada columna individual del footer */
+    .footer-column, .footer-section {
+        width: 100% !important;
+        margin: 0 auto;
+    }
+
+    /* Las redes sociales e iconos */
+    .social-links, .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+}
