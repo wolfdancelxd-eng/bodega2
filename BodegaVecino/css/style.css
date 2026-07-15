@@ -1749,19 +1749,25 @@ body, html {
         display: block !important;
     }
 
-    /* El botón recupera su tamaño original de diseño en PC */
+    /* EL BOTÓN REFORMADO PARA PC (Elegante y del tamaño justo) */
     .cont-sesion input[type="submit"] {
-        width: auto !important; 
-        max-width: 200px !important; /* Limita que no se estire en pantallas gigantes */
-        padding: 10px 24px !important;
-        display: inline-block !important;
-        margin-top: 15px !important;
+        width: 100% !important; 
+        max-width: 220px !important; /* Evita que se estire de forma exagerada */
+        padding: 12px 20px !important;
+        margin-top: 20px !important;
+        display: block !important;
+        text-align: center !important;
+        border-radius: 8px !important; /* Esquinas redondeadas como los inputs */
+        font-size: 15px !important;
+        font-weight: bold !important;
+        cursor: pointer;
     }
     
-    /* Los inputs en PC mantienen un ancho controlado */
+    /* Los inputs en PC se mantienen estables */
     .cont-sesion input[type="email"],
     .cont-sesion input[type="password"] {
         width: 100% !important;
         max-width: 100% !important;
+        box-sizing: border-box !important;
     }
 }
