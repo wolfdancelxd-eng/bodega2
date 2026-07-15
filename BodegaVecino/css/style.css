@@ -1749,25 +1749,24 @@ body, html {
         display: block !important;
     }
 
-    /* EL BOTÓN BLINDADO (Fuerza bruta con doble selector) */
+    /* EL BOTÓN GIGANTE (Duplicado al 100% del contenedor) */
     .cont-sesion form input[type="submit"],
     .cont-sesion input[type="submit"] {
         display: block !important;
         
-        /* Forzamos un ancho mínimo y máximo idénticos para que no se mueva */
-        width: 240px !important; 
-        min-width: 240px !important;
-        max-width: 240px !important;
+        /* Lo obligamos a ocupar TODO el ancho (igual que los inputs) */
+        width: 100% !important; 
+        min-width: 100% !important;
+        max-width: 100% !important;
         
-        margin: 25px 0 0 0 !important; /* Margen arriba de 25px, y 0 a los lados para pegarse a la izquierda */
-        padding: 12px 20px !important;
+        margin: 25px 0 0 0 !important; /* Pegado a la izquierda */
+        padding: 14px 20px !important; /* Un poquito más alto para que tenga presencia */
         text-align: center !important;
-        border-radius: 8px !important;
-        font-size: 15px !important;
+        border-radius: 8px !important; /* Esquinas idénticas a los inputs */
+        font-size: 16px !important; /* Texto un poquito más grande */
         font-weight: bold !important;
         cursor: pointer !important;
         
-        /* Quitamos flotados o alineaciones raras que lo tiren a otro lado */
         float: none !important;
         clear: both !important;
     }
@@ -1779,5 +1778,4 @@ body, html {
         max-width: 100% !important;
         box-sizing: border-box !important;
     }
-}
 }
