@@ -1703,3 +1703,47 @@ body, html {
         box-sizing: border-box;
     }
 }
+@media (max-width: 768px) {
+    /* 1. Forzamos al contenedor padre a ser de una sola columna y centrado */
+    .container-session {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding: 20px 10px !important;
+        box-sizing: border-box !important;
+        min-height: calc(100vh - 160px) !important; /* Mantiene el contenido centrado verticalmente */
+    }
+
+    /* 2. OCULTAMOS EL BANNER GIGANTE (La columna con la imagen del estante) */
+    .panel-banner {
+        display: none !important;
+    }
+
+    /* 3. Hacemos que la caja de inicio de sesión ocupe todo el ancho disponible */
+    .cont-sesion {
+        width: 100% !important;
+        max-width: 400px !important; /* Limite cómodo para que no se vea gigante en tablets */
+        padding: 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 4. Aseguramos que el formulario y sus elementos internos se alineen bien */
+    .cont-sesion form {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 5. Inputs y botones al 100% de ancho de su contenedor */
+    .cont-sesion input[type="email"],
+    .cont-sesion input[type="password"],
+    .cont-sesion input[type="submit"] {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 15px !important;
+    }
+}
