@@ -1666,3 +1666,40 @@ body, html {
         margin-top: 5px !important;
     }
 }
+@media (max-width: 768px) {
+    /* 1. Buscamos el contenedor principal del login (suele llamarse .login-container, .auth-container o similar) */
+    .login-container, .auth-container, .login-wrapper {
+        display: flex !important;
+        flex-direction: column !important; /* Alinea todo en vertical */
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding: 20px !important;
+        box-sizing: border-box;
+    }
+
+    /* 2. Ocultamos la imagen decorativa del estante para que no estorbe en celular */
+    .login-image, .auth-image, .login-sidebar, 
+    .login-container img:not(.logo-img):not(.logo) {
+        display: none !important;
+    }
+
+    /* 3. Forzamos a que la sección del formulario ocupe todo el ancho disponible */
+    .login-form-section, .auth-form, .login-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+        box-sizing: border-box;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    /* 4. Aseguramos que los inputs y botones no se desborden */
+    .login-form-section input, .login-form-section button,
+    .auth-form input, .auth-form button {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+}
