@@ -454,22 +454,24 @@ a{
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* ==========================================
+   CAMBIO AQUÍ: Contenedor de la foto del producto corregido
+   ========================================== */
 .product-img {
     position: relative;
     height: 180px;
     overflow: hidden;
-    background: var(--white); /* Cambiado a blanco para mejor contraste */
+    background: var(--white); /* Cambiado a blanco para ocultar el bloque gris */
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 12px;            /* Espacio interno para que respire la imagen */
 }
 
-/* 🟢 AQUÍ ESTÁ EL AJUSTE CLAVE CORREGIDO: */
 .product-img img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Ajusta la imagen sin estirarla */
-    padding: 10px;       /* Margen interno para que no choque con los bordes */
+    object-fit: contain;     /* Mantiene la proporción perfecta sin estirarse */
 }
 
 .product-img-ph {
@@ -479,7 +481,7 @@ a{
     align-items: center;
     justify-content: center;
     font-size: 50px;
-    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+   
 }
 
 .discount-badge {
@@ -492,7 +494,6 @@ a{
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 6px;
-    z-index: 10; /* Asegurar que se vea sobre la imagen */
 }
 
 .stock-badge {
@@ -508,7 +509,6 @@ a{
     display: flex;
     align-items: center;
     gap: 4px;
-    z-index: 10;
 }
 .stock-badge img{
     width: 30px;
@@ -1422,12 +1422,6 @@ footer {
     /* Ajustes visuales mínimos para que la tarjeta no se vea gigante en móvil */
     .product-img {
         height: 140px; 
-    }
-
-    /* Ajuste responsivo para que las fotos tampoco se estiren en celulares */
-    .product-img img {
-        object-fit: contain;
-        padding: 6px;
     }
     
     .product-name {
