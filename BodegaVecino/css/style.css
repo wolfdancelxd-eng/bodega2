@@ -1747,42 +1747,87 @@ body, html {
         margin-bottom: 15px !important;
     }
 }
+/* ==========================================
+   ESTILOS EXCLUSIVOS PARA MÓVIL (Celulares)
+   ========================================== */
 @media (max-width: 768px) {
-    /* 1. Forzamos a que todo el contenedor se alinee pegado a la izquierda del viewport real */
+    /* 1. Contenedor principal en móvil */
     .container-session {
-        display: block !important; /* Cambiamos a block para controlar mejor el flujo de los bloques */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
         width: 100% !important;
         max-width: 100vw !important;
         margin: 0 !important;
-        padding: 15px !important; /* Reducimos el padding para ganar espacio */
+        padding: 20px 15px !important;
         box-sizing: border-box !important;
     }
 
-    /* 2. El bloque que contiene el formulario se centra horizontalmente */
+    /* Ocultamos el banner izquierdo en celular */
+    .panel-banner {
+        display: none !important;
+    }
+
+    /* 2. Caja del formulario centrada y limpia */
     .cont-sesion {
         width: 100% !important;
         max-width: 100% !important;
-        margin: 0 auto !important; /* Centra el bloque de manera exacta */
-        padding: 0 !important;
+        margin: 0 auto !important;
+        padding: 10px !important;
         box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
     }
 
-    /* 3. Aseguramos que el formulario no intente empujar hacia el lado derecho */
+    /* El elemento <form> interno */
     .cont-sesion form {
         width: 100% !important;
+        max-width: 320px !important; /* Limita el ancho del formulario en móvil para que se vea estético */
         margin: 0 auto !important;
-        padding: 10px 0 !important;
-        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important; /* Estira los inputs al ancho del form */
     }
 
-    /* 4. Forzamos que las cajas de texto y botones estén bien alineados */
+    /* 3. Inputs de texto y contraseñas en móvil */
     .cont-sesion input[type="email"],
-    .cont-sesion input[type="password"],
-    .cont-sesion input[type="submit"] {
+    .cont-sesion input[type="password"] {
         width: 100% !important;
         max-width: 100% !important;
-        margin-left: 0 !important; /* Elimina cualquier empuje a la derecha */
-        margin-right: 0 !important;
+        margin: 0 0 15px 0 !important;
+        padding: 12px !important;
         box-sizing: border-box !important;
+        border-radius: 8px !important;
+    }
+
+    /* 4. EL BOTÓN DE INICIAR SESIÓN (¡El rebelde!) */
+    .cont-sesion input[type="submit"] {
+        width: 100% !important; /* En celular ocupa todo el ancho del formulario */
+        max-width: 100% !important;
+        padding: 12px !important;
+        margin: 10px 0 !important;
+        background-color: #ff0000 !important; /* Tu color rojo */
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        cursor: pointer;
+        display: block !important;
+        text-align: center !important;
+    }
+}
+
+/* ==========================================
+   CORRECCIÓN PARA ESCRITORIO (PC)
+   Evitamos que los estilos de móvil afecten la PC
+   ========================================== */
+@media (min-width: 769px) {
+    .cont-sesion input[type="submit"] {
+        width: auto !important; /* Recupera su tamaño original en PC */
+        min-width: 150px !important; 
+        padding: 10px 20px !important;
+        border-radius: 6px !important;
     }
 }
