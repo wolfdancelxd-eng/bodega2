@@ -1744,30 +1744,33 @@ body, html {
    3. VERSIÓN ESCRITORIO (PC - Pantallas de 769px a más)
    ======================================================= */
 @media screen and (min-width: 769px) {
-    /* Aseguramos que se vuelva a mostrar la imagen en PC */
+    /* Mostramos el banner lateral en PC */
     .panel-banner {
         display: block !important;
     }
 
-    /* EL BOTÓN REFORMADO PARA PC (Elegante y del tamaño justo) */
+    /* EL BOTÓN REFORMADO PARA PC (Estético, alineado y con el ancho correcto) */
     .cont-sesion input[type="submit"] {
+        display: block !important; /* Rompe el inline para alinearse bien */
         width: 100% !important; 
-        max-width: 220px !important; /* Evita que se estire de forma exagerada */
+        max-width: 240px !important; /* Ajusta este valor si lo quieres un poco más ancho o corto */
+        margin-top: 25px !important;
+        margin-left: 0 !important; /* Lo alinea exactamente bajo el input de contraseña */
+        margin-right: auto !important;
         padding: 12px 20px !important;
-        margin-top: 20px !important;
-        display: block !important;
         text-align: center !important;
-        border-radius: 8px !important; /* Esquinas redondeadas como los inputs */
+        border-radius: 8px !important; /* Esquinas redondeadas idénticas a los inputs */
         font-size: 15px !important;
         font-weight: bold !important;
         cursor: pointer;
     }
     
-    /* Los inputs en PC se mantienen estables */
+    /* Los inputs en PC estables */
     .cont-sesion input[type="email"],
     .cont-sesion input[type="password"] {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
     }
+}
 }
