@@ -1749,20 +1749,27 @@ body, html {
         display: block !important;
     }
 
-    /* EL BOTÓN REFORMADO PARA PC (Estético, alineado y con el ancho correcto) */
+    /* EL BOTÓN BLINDADO (Fuerza bruta con doble selector) */
+    .cont-sesion form input[type="submit"],
     .cont-sesion input[type="submit"] {
-        display: block !important; /* Rompe el inline para alinearse bien */
-        width: 100% !important; 
-        max-width: 240px !important; /* Ajusta este valor si lo quieres un poco más ancho o corto */
-        margin-top: 25px !important;
-        margin-left: 0 !important; /* Lo alinea exactamente bajo el input de contraseña */
-        margin-right: auto !important;
+        display: block !important;
+        
+        /* Forzamos un ancho mínimo y máximo idénticos para que no se mueva */
+        width: 240px !important; 
+        min-width: 240px !important;
+        max-width: 240px !important;
+        
+        margin: 25px 0 0 0 !important; /* Margen arriba de 25px, y 0 a los lados para pegarse a la izquierda */
         padding: 12px 20px !important;
         text-align: center !important;
-        border-radius: 8px !important; /* Esquinas redondeadas idénticas a los inputs */
+        border-radius: 8px !important;
         font-size: 15px !important;
         font-weight: bold !important;
-        cursor: pointer;
+        cursor: pointer !important;
+        
+        /* Quitamos flotados o alineaciones raras que lo tiren a otro lado */
+        float: none !important;
+        clear: both !important;
     }
     
     /* Los inputs en PC estables */
