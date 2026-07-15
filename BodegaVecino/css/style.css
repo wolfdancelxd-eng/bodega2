@@ -458,13 +458,18 @@ a{
     position: relative;
     height: 180px;
     overflow: hidden;
-    background: var(--gray-light);
+    background: var(--white); /* Cambiado a blanco para mejor contraste */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* 🟢 AQUÍ ESTÁ EL AJUSTE CLAVE CORREGIDO: */
 .product-img img {
     width: 100%;
     height: 100%;
-   
+    object-fit: contain; /* Ajusta la imagen sin estirarla */
+    padding: 10px;       /* Margen interno para que no choque con los bordes */
 }
 
 .product-img-ph {
@@ -487,6 +492,7 @@ a{
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 6px;
+    z-index: 10; /* Asegurar que se vea sobre la imagen */
 }
 
 .stock-badge {
@@ -502,6 +508,7 @@ a{
     display: flex;
     align-items: center;
     gap: 4px;
+    z-index: 10;
 }
 .stock-badge img{
     width: 30px;
@@ -1294,4 +1301,140 @@ footer {
 /* Pequeño efecto de pulsado al hacer clic */
 .btn-return:active {
     transform: scale(0.98);
+}
+
+
+/* ==========================================================================
+   NUEVOS ESTILOS RESPONSIVOS ADAPTADOS (Media Queries)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* 1. Ajustes globales de página de contacto */
+    #page-contacto {
+        padding: 15px;
+    }
+
+    .contact-header {
+        padding: 30px 15px 10px;
+    }
+
+    .contact-header h1 {
+        font-size: 26px;
+    }
+
+    .contact-header p {
+        font-size: 14px;
+    }
+
+    /* 2. Hacemos que la información lateral y el formulario se organicen uno abajo del otro */
+    .contact-body {
+        flex-direction: column;
+        padding: 20px 10px;
+        gap: 25px;
+    }
+
+    /* 3. Ajustamos las tarjetas de información de contacto */
+    .contact-info {
+        width: 100%;
+        gap: 15px;
+    }
+
+    .contact-card {
+        width: 100%;
+        padding: 20px;
+    }
+
+    /* 4. Formulario de contacto adaptativo */
+    .contact-form-card {
+        width: 100%;
+        padding: 22px;
+    }
+
+    .contact-form-card h2 {
+        font-size: 19px;
+        margin-bottom: 18px;
+    }
+
+    /* 5. APILAMIENTO CLAVE: Nombre Completo y Teléfono se ponen verticalmente */
+    .form-row {
+        grid-template-columns: 1fr; /* Pasa de 2 columnas a 1 columna */
+        gap: 16px;
+        margin-bottom: 0px;
+    }
+
+    .form-group {
+        margin-bottom: 16px !important; /* Mantenemos margen uniforme en móviles */
+    }
+
+    /* 6. Cuadrícula informativa de abajo en vertical */
+    .info-grid {
+        grid-template-columns: 1fr; /* Una sola tarjeta por fila */
+        padding: 0 10px 30px;
+        gap: 20px;
+    }
+
+    .info-card {
+        padding: 22px;
+    }
+    
+    /* 7. Centrado y estética de los Toast en móviles */
+    #toast-container-contacto {
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+    }
+    /* 8. Corregir banner principal (Hero) en móviles */
+    .hero {
+        grid-template-columns: 1fr; /* Pasa de 2 columnas a 1 sola */
+        padding: 40px 20px;
+        text-align: center;
+        min-height: auto;
+    }
+    
+    .hero-text h1 {
+        font-size: 28px;
+    }
+    
+    .hero-btns {
+        justify-content: center;
+    }
+    
+    .hero-img {
+        height: 200px; /* Reducimos la altura de la imagen decorativa */
+    }
+
+    /* 9. Corregir la barra de características (Delivery, Calidad, Horario) */
+    .features-strip {
+        grid-template-columns: 1fr; /* Se apilan en vertical */
+        padding: 20px;
+        gap: 20px;
+    }
+
+    /* 10. REGLA CLAVE: Hacer las tarjetas de productos responsivas */
+    .products-grid, 
+    .catalog-grid, 
+    .promos-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important; /* Se adaptan solas */
+        gap: 15px !important;
+        padding: 15px !important;
+    }
+
+    /* Ajustes visuales mínimos para que la tarjeta no se vea gigante en móvil */
+    .product-img {
+        height: 140px; 
+    }
+
+    /* Ajuste responsivo para que las fotos tampoco se estiren en celulares */
+    .product-img img {
+        object-fit: contain;
+        padding: 6px;
+    }
+    
+    .product-name {
+        font-size: 13px;
+    }
+    
+    .price-current {
+        font-size: 15px;
+    }
 }
