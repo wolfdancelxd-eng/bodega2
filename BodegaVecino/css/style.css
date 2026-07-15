@@ -1593,3 +1593,76 @@ body, html {
     box-sizing: inherit;
 }
 }
+@media (max-width: 768px) {
+    /* Contenedor de los botones de categorías (Todos, Abarrotes, etc.) */
+    .categories-container, .filter-container, .catalog-filters {
+        display: flex !important;
+        flex-direction: row !important; /* Los mantenemos en fila */
+        overflow-x: auto !important;    /* Permite deslizar con el dedo */
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap !important; /* Evita que salten de línea */
+        gap: 10px !important;
+        padding: 10px 15px !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* Ocultamos la barra de scroll fea para que se vea limpio */
+    .categories-container::-webkit-scrollbar {
+        display: none;
+    }
+}
+@media (max-width: 768px) {
+    /* Forzamos a que cualquier contenedor de productos use 1 sola columna */
+    .promociones-grid, .products-grid, .grid-container, 
+    [class*="grid"], [class*="products-container"] {
+        display: flex !important;
+        flex-direction: column !important; /* Uno abajo del otro */
+        align-items: center !important;
+        gap: 20px !important;
+        width: 100% !important;
+    }
+
+    /* Aseguramos que las tarjetas recuperen su ancho real */
+    .product-card, .promo-card, [class*="card"] {
+        width: 90% !important; /* Ocupa casi todo el ancho del celular */
+        max-width: 340px !important;
+        min-width: unset !important; /* Rompe el límite anterior */
+    }
+}
+@media (max-width: 768px) {
+    /* Separamos el menú en tres bloques limpios */
+    header, .navbar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        height: auto !important;
+        padding: 15px 10px !important;
+    }
+
+    /* Los links de navegación */
+    .nav-links, nav ul, .menu-links {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        margin: 10px 0 !important;
+        width: 100% !important;
+    }
+
+    .nav-links a, nav ul li a {
+        font-size: 13px !important;
+        white-space: nowrap; /* Evita que una palabra se corte a la mitad */
+    }
+
+    /* El carrito y botón de login abajo bien ordenados */
+    .header-actions, .auth-buttons {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 15px !important;
+        width: 100% !important;
+        margin-top: 5px !important;
+    }
+}
