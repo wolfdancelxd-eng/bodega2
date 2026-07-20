@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 2. ELIMINAR UN PRODUCTO INDIVIDUAL
     if (isset($_POST['accion_eliminar'])) {
         $id_eliminar = $_POST['producto_id'];
+        $id_modificar = $id_eliminar; // <-- CORRECCIÓN: Asignamos el ID para que AJAX sepa qué remover en el HTML
         if (isset($_SESSION['carrito'][$id_eliminar])) {
             unset($_SESSION['carrito'][$id_eliminar]);
         }
@@ -235,7 +236,7 @@ include 'include/header.php';
                             <a href="procesar_compra.php" style="display: block; width: 100%; text-align: center; background-color: #dc2626; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; text-decoration: none; box-sizing: border-box;">
                                 Finalizar Compra
                             </a>
-                        <?php else: ?>
+                        <?php edit: else: ?>
                             <button onclick="document.getElementById('modalLogin').style.display='flex'" style="width: 100%; background-color: #dc2626; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px;">
                                 Finalizar Compra
                             </button>
