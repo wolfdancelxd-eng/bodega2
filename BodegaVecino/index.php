@@ -309,7 +309,7 @@ include 'include/header.php';
                         <div class="product-img-ph">
                             <img src="https://tofuu.getjusto.com/orioneat-local/resized2/MBkp7HC2QAvQePhmv-1000-x.webp" alt="">
                         </div>
-                        <span class="discount-badge ">-20%</span>
+                        <span class="discount-badge">-20%</span>
                     </div>
                     <div class="product-body">
                         <div class="product-name">Galletas Casino 43 g</div>
@@ -324,7 +324,7 @@ include 'include/header.php';
 
         <div class="whatsapp-cta">
             <h3>¿Quieres recibir nuestras promociones?</h3>
-            <p>Suscríbete a nuestro WhatsApp para recibir ofertas exclusivas</p>
+            <p>Suscríbete a nuestro WhatsApp para receive ofertas exclusivas</p>
             <button class="btn-whatsapp">Suscribirme por WhatsApp</button>
         </div>
 
@@ -398,8 +398,13 @@ document.addEventListener("DOMContentLoaded", function() {
                         botonSubmit.innerHTML = "Agotado";
                     }
                     
-                    // 3. Actualiza el contador del header (si existe un elemento con clase .carrito-count)
-                    const contadorGlobal = document.querySelector(".carrito-count");
+                    // 3. CORRECCIÓN MULTI-SELECTOR: Busca cualquier posible indicador del carrito en el header
+                    const contadorGlobal = document.querySelector(".carrito-count") || 
+                                           document.querySelector(".cart-count") || 
+                                           document.querySelector("[class*='cart'] span") ||
+                                           document.querySelector(".content-cart span") || 
+                                           document.querySelector("a[href*='carrito'] span");
+                                           
                     if (contadorGlobal) {
                         contadorGlobal.textContent = data.cantidad_carrito_total;
                     }
