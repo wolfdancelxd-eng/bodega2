@@ -32,6 +32,12 @@ function validarLogin($correo_ingresado, $contrasena_ingresada) {
             "nombre" => "Angel Requena",
             "correo" => "requenaangel61@gmail.com",
             "password" => "abc123"
+        ],
+        [
+            "id" => 3,
+            "nombre" => "sael",
+            "correo" => "saelmaple@gmail.com",
+            "password" => "aisurei123"
         ]
     ];
 
